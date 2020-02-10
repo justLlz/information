@@ -5,6 +5,7 @@ from info.utils.response_code import RET
 from . import index_blu
 from flask import render_template, current_app, session, jsonify, request, g
 
+
 # 功能描述:首页新闻列表展示
 # 请求路径: /newslist
 # 请求方式: GET
@@ -24,8 +25,8 @@ def news_list():
     """
     # 1.获取参数
     cid = request.args.get('cid')
-    page = request.args.get('page',1) #获取不到默认值是1
-    per_page = request.args.get('per_page',10)#获取不到默认值是10
+    page = request.args.get('page', 1)  # 获取不到默认值是1
+    per_page = request.args.get('per_page', 10)  # 获取不到默认值是10
 
     # 2.校验参数,参数类型转换
     try:
@@ -38,15 +39,15 @@ def news_list():
 
     # 3.分页查询,用到paginate
     try:
-        #判断分类编号是否不等于1
+        # 判断分类编号是否不等于1
         filters = [News.status == 0]
         if cid != "1":
             filters.append(News.category_id == cid)
 
-        paginate = News.query.filter(*filters).order_by(News.create_time.desc()).paginate(page,per_page,False)
+        paginate = News.query.filter(*filters).order_by(News.create_time.desc()).paginate(page, per_page, False)
     except Exception as e:
         current_app.logger.error(e)
-        return jsonify(errno=RET.DBERR,errmsg="获取新闻失败")
+        return jsonify(errno=RET.DBERR, errmsg="获取新闻失败")
 
     # 4.获取到分页对象属性,总页数,当前页,当前页对象
     totalPages = paginate.pages
@@ -59,15 +60,13 @@ def news_list():
         newsList.append(news.to_dict())
 
     # 6.返回响应,携带数据
-    return jsonify(errno=RET.OK,errmsg="查询成功",newsList=newsList,totalPage=totalPages,currentPage=currentPage)
+    return jsonify(errno=RET.OK, errmsg="查询成功", newsList=newsList, totalPage=totalPages, currentPage=currentPage)
 
 
-
-#首页内容
-@index_blu.route('/',methods=['GET','POST'])
+# 首页内容
+@index_blu.route('/', methods=['GET', 'POST'])
 @user_login_data
 def show_index_page():
-
     # 获取session中的用户信息
     # user_id = session.get("user_id")
     #
@@ -79,42 +78,42 @@ def show_index_page():
     #     except Exception as e:
     #         current_app.logger.error(e)
 
-    #查询热门新闻前10条
+    # 查询热门新闻前10条
     try:
         news_list = News.query.order_by(News.clicks.desc()).limit(10).all()
     except Exception as e:
         current_app.logger.error(e)
-        return jsonify(errno=RET.DBERR,errmsg="新闻查询失败")
+        return jsonify(errno=RET.DBERR, errmsg="新闻查询失败")
 
-    #将新闻对象列表,转成字典列表
+    # 将新闻对象列表,转成字典列表
     click_news_list = []
     for news in news_list:
         click_news_list.append(news.to_dict())
 
-    #查询分类数据
+    # 查询分类数据
     try:
         categories = Category.query.all()
     except Exception as e:
         current_app.logger.error(e)
-        return jsonify(errno=RET.DBERR,errmsg="分类查询失败")
+        return jsonify(errno=RET.DBERR, errmsg="分类查询失败")
 
-    #将分类对象列表,转成字典列表
-    category_list =[]
+    # 将分类对象列表,转成字典列表
+    category_list = []
     for category in categories:
         category_list.append(category.to_dict())
 
     data = {
         # 判断user如果有值,返回左边内容,否则返回右边的值
-        "user_info":g.user.to_dict() if g.user else "",
-        "click_news_list":click_news_list,
-        "categories":category_list
+        "user_info": g.user.to_dict() if g.user else "",
+        "click_news_list": click_news_list,
+        "categories": category_list
     }
 
-    return render_template('news/index.html',data=data)
+    return render_template('news/index.html', data=data)
 
-#浏览器在访问,在访问每个网站的时候,都会发送一个Get请求,向/favicon.ico地址获取logo
-#app中提供了方法send_static_file,会自动寻找static静态文件下面的资源
+
+# 浏览器在访问,在访问每个网站的时候,都会发送一个Get请求,向/favicon.ico地址获取logo
+# app中提供了方法send_static_file,会自动寻找static静态文件下面的资源
 @index_blu.route('/favicon.ico')
 def get_web_logo():
-
     return current_app.send_static_file('news/favicon.ico')

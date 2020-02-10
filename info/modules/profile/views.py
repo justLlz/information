@@ -8,6 +8,7 @@ from . import profile_blu
 # from hjutils.image_storage import image_storage
 from info.utils.image_storage import image_storage
 
+
 # 作者新闻列表
 # 请求路径: /user/other_news_list
 # 请求方式: GET
@@ -27,12 +28,12 @@ def other_news_list():
     :return:
     """
     # 1.获取参数
-    page = request.args.get('p',1)
+    page = request.args.get('p', 1)
     author_id = request.args.get("user_id")
 
     # 2.参数校验,为空判断,参数类型转换
     if not author_id:
-        return jsonify(errno=RET.PARAMERR,errmsg="参数不全")
+        return jsonify(errno=RET.PARAMERR, errmsg="参数不全")
 
     try:
         page = int(page)
@@ -45,18 +46,18 @@ def other_news_list():
         author = User.query.get(author_id)
     except Exception as e:
         current_app.logger.error(e)
-        return jsonify(errno=RET.DBERR,errmsg="获取用户失败")
+        return jsonify(errno=RET.DBERR, errmsg="获取用户失败")
 
     # 4.判断作者对象是否存在
     if not author:
-        return jsonify(errno=RET.NODATA,errmsg="作者不存在")
+        return jsonify(errno=RET.NODATA, errmsg="作者不存在")
 
     # 5.分页获取作者新闻列表
     try:
-        paginate = author.news_list.order_by(News.create_time.desc()).paginate(page,2,False)
+        paginate = author.news_list.order_by(News.create_time.desc()).paginate(page, 2, False)
     except Exception as e:
         current_app.logger.error(e)
-        return jsonify(errno=RET.DBERR,errmsg="查询新闻失败")
+        return jsonify(errno=RET.DBERR, errmsg="查询新闻失败")
 
     # 6.获取到分页对象属性,总页数,当前页,当前页对象
     total_page = paginate.pages
@@ -69,12 +70,11 @@ def other_news_list():
 
     # 7.返回响应,携带数据
     data = {
-        "total_page":total_page,
-        "current_page":current_page,
-        "news_list":news_list
+        "total_page": total_page,
+        "current_page": current_page,
+        "news_list": news_list
     }
-    return jsonify(errno=RET.OK,errmsg="获取成功",data=data)
-
+    return jsonify(errno=RET.OK, errmsg="获取成功", data=data)
 
 
 # 作者详情界面
@@ -99,18 +99,18 @@ def other_info():
 
     # 2.判断编号是否存在
     if not author_id:
-        return jsonify(errno=RET.PARAMERR,errmsg="参数不全")
+        return jsonify(errno=RET.PARAMERR, errmsg="参数不全")
 
     # 3.查询作者对象
     try:
         author = User.query.get(author_id)
     except Exception as e:
         current_app.logger.error(e)
-        return jsonify(errno=RET.DBERR,errmsg="查询用户失败")
+        return jsonify(errno=RET.DBERR, errmsg="查询用户失败")
 
     # 4.判断作者对象是否存在
     if not author:
-        return jsonify(errno=RET.NODATA,errmsg="作者不存在")
+        return jsonify(errno=RET.NODATA, errmsg="作者不存在")
 
     # 4.2判断当前用户是否关注了该作者
     is_followed = False
@@ -118,14 +118,13 @@ def other_info():
         if g.user in author.followers:
             is_followed = True
 
-
     # 5.拼接数据,渲染页面
     data = {
-        "author_info":author.to_dict() if author else "",
-        "user_info":g.user.to_dict() if g.user else "",
-        "is_followed":is_followed
+        "author_info": author.to_dict() if author else "",
+        "user_info": g.user.to_dict() if g.user else "",
+        "is_followed": is_followed
     }
-    return render_template('news/other.html',data=data)
+    return render_template('news/other.html', data=data)
 
 
 # 获取我的关注列表
@@ -147,7 +146,7 @@ def user_follow():
     :return:
     """
     # 1.获取参数
-    page = request.args.get("p",1)
+    page = request.args.get("p", 1)
 
     # 2.参数类型转换
     try:
@@ -158,10 +157,10 @@ def user_follow():
 
     # 3.分页查询数据
     try:
-        paginate = g.user.followed.paginate(page,4,False)
+        paginate = g.user.followed.paginate(page, 4, False)
     except Exception as e:
         current_app.logger.error(e)
-        return jsonify(errno=RET.DBERR,errmsg="获取用户失败")
+        return jsonify(errno=RET.DBERR, errmsg="获取用户失败")
 
     # 4.获取分页对象属性,总页数,当前页,当前页对象
     totalPage = paginate.pages
@@ -174,12 +173,12 @@ def user_follow():
         user_list.append(item.to_dict())
 
     # 6.拼接数据返回页面渲染
-    data= {
-        "totalPage":totalPage,
-        "currentPage":currentPage,
-        "user_list":user_list
+    data = {
+        "totalPage": totalPage,
+        "currentPage": currentPage,
+        "user_list": user_list
     }
-    return render_template('news/user_follow.html',data=data)
+    return render_template('news/user_follow.html', data=data)
 
 
 # 新闻列表展示
@@ -201,7 +200,7 @@ def news_list():
     :return:
     """
     # 1.获取参数
-    page = request.args.get('p',1)
+    page = request.args.get('p', 1)
 
     # 2.参数据类型转换
     try:
@@ -212,10 +211,10 @@ def news_list():
 
     # 3.分页查询
     try:
-        paginate = g.user.news_list.order_by(News.create_time.desc()).paginate(page,3,False)
+        paginate = g.user.news_list.order_by(News.create_time.desc()).paginate(page, 3, False)
     except Exception as e:
         current_app.logger.error(e)
-        return jsonify(errno=RET.DBERR,errmsg="新闻获取失败")
+        return jsonify(errno=RET.DBERR, errmsg="新闻获取失败")
 
     # 4.获取分页对象属性,总页数,当前页,对象列表
     totalPage = paginate.pages
@@ -225,15 +224,15 @@ def news_list():
     # 5.对象列表转成字典列表
     news_list = []
     for item in items:
-        news_list.append(item.to_review_dict()) #小问题
+        news_list.append(item.to_review_dict())  # 小问题
 
     # 6.拼接数据渲染页面
     data = {
-        "totalPage":totalPage,
-        "currentPage":currentPage,
-        "news_list":news_list
+        "totalPage": totalPage,
+        "currentPage": currentPage,
+        "news_list": news_list
     }
-    return render_template('news/user_news_list.html',data=data)
+    return render_template('news/user_news_list.html', data=data)
 
 
 # 新闻发布
@@ -261,17 +260,17 @@ def news_release():
 
         try:
             categories = Category.query.all()
-            categories.pop(0) #弹出最新
+            categories.pop(0)  # 弹出最新
         except Exception as e:
             current_app.logger.error(e)
-            return jsonify(errno=RET.DBERR,errmsg="分类查询失败")
+            return jsonify(errno=RET.DBERR, errmsg="分类查询失败")
 
         # 对象列表转成,字典列表, 统一使用字典格式返回
         category_list = []
         for category in categories:
             category_list.append(category.to_dict())
 
-        return render_template('news/user_news_release.html',categories=categories)
+        return render_template('news/user_news_release.html', categories=categories)
 
     # 2.获取参数
     title = request.form.get("title")
@@ -281,19 +280,19 @@ def news_release():
     content = request.form.get("content")
 
     # 3.校验参数
-    if not all([title,category_id,digest,index_image,content]):
-        return jsonify(errno=RET.PARAMERR,errmsg="参数不全")
+    if not all([title, category_id, digest, index_image, content]):
+        return jsonify(errno=RET.PARAMERR, errmsg="参数不全")
 
     # 4.上传图片
     try:
         image_name = image_storage(index_image.read())
     except Exception as e:
         current_app.logger.error(e)
-        return jsonify(errno=RET.THIRDERR,errmsg="七牛云上传异常")
+        return jsonify(errno=RET.THIRDERR, errmsg="七牛云上传异常")
 
     # 5.判断图片上传是否成功
     if not image_name:
-        return jsonify(errno=RET.NODATA,errmsg="图片上传失败")
+        return jsonify(errno=RET.NODATA, errmsg="图片上传失败")
 
     # 6.创建新闻对象,设置属性
     news = News()
@@ -304,7 +303,7 @@ def news_release():
     news.index_image_url = constants.QINIU_DOMIN_PREFIX + image_name
     news.category_id = category_id
     news.user_id = g.user.id
-    news.status = 1  #0代表审核通过，1代表审核中，-1代表审核不通过
+    news.status = 1  # 0代表审核通过，1代表审核中，-1代表审核不通过
 
     # 7.保存新闻对象到数据库
     try:
@@ -313,10 +312,10 @@ def news_release():
     except Exception as e:
         current_app.logger.error(e)
         db.session.rollback()
-        return jsonify(errno=RET.DBERR,errmsg="新闻发布失败")
+        return jsonify(errno=RET.DBERR, errmsg="新闻发布失败")
 
     # 8.返回响应
-    return jsonify(errno=RET.OK,errmsg="新闻发布成功")
+    return jsonify(errno=RET.OK, errmsg="新闻发布成功")
 
 
 # 获取收藏列表
@@ -338,7 +337,7 @@ def news_collection():
     :return:
     """
     # 1.获取参数,获取默认第一页
-    page = request.args.get('p',1)
+    page = request.args.get('p', 1)
 
     # 2.参数类型转换,字符串转整数,因为paginate中使用的是整数
     try:
@@ -349,11 +348,11 @@ def news_collection():
 
     # 3.分页查询
     try:
-        #获取第page页, 每页有10条, 不进行错误输出
-        paginate = g.user.collection_news.order_by(News.create_time.desc()).paginate(page,10,False)
+        # 获取第page页, 每页有10条, 不进行错误输出
+        paginate = g.user.collection_news.order_by(News.create_time.desc()).paginate(page, 10, False)
     except Exception as e:
         current_app.logger.error(e)
-        return jsonify(errno=RET.DBERR,errmsg="获取新闻失败")
+        return jsonify(errno=RET.DBERR, errmsg="获取新闻失败")
 
     # 4.获取到分页对象中的属性,总页数,当前页,当前页对象
     totalPage = paginate.pages
@@ -367,15 +366,11 @@ def news_collection():
 
     # 6.拼接数据,渲染页面
     data = {
-        "totalPage":totalPage,
-        "currentPage":currentPage,
-        "news_list":news_list
+        "totalPage": totalPage,
+        "currentPage": currentPage,
+        "news_list": news_list
     }
-    return render_template('news/user_collection.html',data=data)
-
-
-
-
+    return render_template('news/user_collection.html', data=data)
 
 
 # 密码修改
@@ -383,7 +378,7 @@ def news_collection():
 # 请求方式:GET,POST
 # 请求参数:GET无, POST有参数,old_password, new_password
 # 返回值:GET请求: user_pass_info.html页面,data字典数据, POST请求: errno, errmsg
-@profile_blu.route('/pass_info',methods=['GET','POST'])
+@profile_blu.route('/pass_info', methods=['GET', 'POST'])
 @user_login_data
 def pass_info():
     """
@@ -405,18 +400,19 @@ def pass_info():
     new_password = request.json.get("new_password")
 
     # 3.校验参数
-    if not all([old_password,new_password]):
-        return jsonify(errno=RET.PARAMERR,errmsg="参数不全")
+    if not all([old_password, new_password]):
+        return jsonify(errno=RET.PARAMERR, errmsg="参数不全")
 
     # 4.判断旧密码是否正确
     if not g.user.check_passowrd(old_password):
-        return jsonify(errno=RET.DATAERR,errmsg="旧密码错误")
+        return jsonify(errno=RET.DATAERR, errmsg="旧密码错误")
 
     # 5.设置新密码
     g.user.password = new_password
 
     # 6.返回响应
-    return jsonify(errno=RET.OK,errmsg="修改成功")
+    return jsonify(errno=RET.OK, errmsg="修改成功")
+
 
 # 头像设置
 # 请求路径: /user/pic_info
@@ -440,36 +436,36 @@ def pic_info():
     # 1.第一次进来GEt请求,直接返回页面,携带用户数据
     if request.method == 'GET':
         data = {
-            "user_info":g.user.to_dict() if g.user else ""
+            "user_info": g.user.to_dict() if g.user else ""
         }
-        return render_template('news/user_pic_info.html',data=data)
+        return render_template('news/user_pic_info.html', data=data)
 
     # 2.获取参数
     avatar = request.files.get('avatar')
 
     # 3.校验参数
     if not avatar:
-        return jsonify(errno=RET.PARAMERR,errmsg="图像不能为空")
+        return jsonify(errno=RET.PARAMERR, errmsg="图像不能为空")
 
     # 4.上传头像
     try:
         image_name = image_storage(avatar.read())
     except Exception as e:
         current_app.logger.error(e)
-        return jsonify(errno=RET.THIRDERR,errmsg="七牛云上传异常")
+        return jsonify(errno=RET.THIRDERR, errmsg="七牛云上传异常")
 
     # 5.判断头像是否上传成功
     if not image_name:
-        return jsonify(errno=RET.NODATA,errmsg="图片上传失败")
+        return jsonify(errno=RET.NODATA, errmsg="图片上传失败")
 
     # 6.设置用户头像属性
     g.user.avatar_url = image_name;
 
     # 7.返回响应携带头像
     data = {
-        "avatar_url":constants.QINIU_DOMIN_PREFIX + image_name
+        "avatar_url": constants.QINIU_DOMIN_PREFIX + image_name
     }
-    return jsonify(errno=RET.OK,errmsg="上传成功",data=data)
+    return jsonify(errno=RET.OK, errmsg="上传成功", data=data)
 
 
 # 展示用户基本信息
@@ -492,9 +488,9 @@ def base_info():
     # 1.如果第一次进入是GET请求,携带用户数据渲染页面
     if request.method == "GET":
         data = {
-            "user_info":g.user.to_dict() if g.user else ""
+            "user_info": g.user.to_dict() if g.user else ""
         }
-        return render_template('news/user_base_info.html',data=data)
+        return render_template('news/user_base_info.html', data=data)
 
     # 2.获取参数
     nick_name = request.json.get("nick_name")
@@ -502,11 +498,11 @@ def base_info():
     gender = request.json.get("gender")
 
     # 3.校验参数
-    if not all([nick_name,signature,gender]):
-        return jsonify(errno=RET.PARAMERR,errmsg="参数不全")
+    if not all([nick_name, signature, gender]):
+        return jsonify(errno=RET.PARAMERR, errmsg="参数不全")
 
-    if not gender in ["MAN","WOMAN"]:
-        return jsonify(errno=RET.DATAERR,errmsg="性别异常")
+    if not gender in ["MAN", "WOMAN"]:
+        return jsonify(errno=RET.DATAERR, errmsg="性别异常")
 
     # 4.设置用户信息
     g.user.nick_name = nick_name
@@ -514,16 +510,15 @@ def base_info():
     g.user.gender = gender
 
     # 5.返回响应
-    return jsonify(errno=RET.OK,errmsg="修改成功")
+    return jsonify(errno=RET.OK, errmsg="修改成功")
 
 
-#展示个人中心
+# 展示个人中心
 @profile_blu.route('/show_user_info')
 @user_login_data
 def show_user_info():
-
     data = {
-        "user_info":g.user.to_dict() if g.user else ""
+        "user_info": g.user.to_dict() if g.user else ""
     }
 
-    return render_template('news/user.html',data=data)
+    return render_template('news/user.html', data=data)

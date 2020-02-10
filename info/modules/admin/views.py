@@ -8,6 +8,7 @@ from info.utils.image_storage import image_storage
 from info.utils.response_code import RET
 from . import admin_blu
 
+
 # 新闻分类,编辑/增加
 # 请求路径: /admin/add_category
 # 请求方式: POST
@@ -26,45 +27,44 @@ def add_category():
     # 1.获取参数
     category_id = request.json.get('id')
     category_name = request.json.get('name')
-    
+
     # 2.校验,name即可,必有值
-    if not category_name: 
-        return jsonify(errno=RET.PARAMERR,errmsg="参数不全")
-    
+    if not category_name:
+        return jsonify(errno=RET.PARAMERR, errmsg="参数不全")
+
     # 3.根据分类编号判断,是增加,还是编辑
-    if category_id: #编辑
-        
-        #取出分类对象
+    if category_id:  # 编辑
+
+        # 取出分类对象
         try:
             category = Category.query.get(category_id)
         except Exception as e:
             current_app.logger.error(e)
-            return jsonify(errno=RET.DBERR,errmsg="查询分类失败")
-    
-        #判断分类是否存在
+            return jsonify(errno=RET.DBERR, errmsg="查询分类失败")
+
+        # 判断分类是否存在
         if not category:
-            return jsonify(errno=RET.NODATA,errmsg="分类不存在")
-    
-        #修改分类名称
+            return jsonify(errno=RET.NODATA, errmsg="分类不存在")
+
+        # 修改分类名称
         category.name = category_name
-        
-    else:#增加
-        #创建分类对象,设置属性
+
+    else:  # 增加
+        # 创建分类对象,设置属性
         category = Category()
         category.name = category_name
-        
-        #提交到数据库
+
+        # 提交到数据库
         try:
             db.session.add(category)
             db.session.commit()
         except Exception as e:
             current_app.logger.error(e)
             db.session.rollback()
-            return jsonify(errno=RET.DBERR,errmsg="保存分类失败")
-        
-        
+            return jsonify(errno=RET.DBERR, errmsg="保存分类失败")
+
     # 4.返回响应
-    return jsonify(errno=RET.OK,errmsg="操作成功")
+    return jsonify(errno=RET.OK, errmsg="操作成功")
 
 
 # 新闻分类列表
@@ -86,7 +86,7 @@ def news_category():
         categories = Category.query.all()
     except Exception as e:
         current_app.logger.error(e)
-        return jsonify(errno=RET.DBERR,errmsg="查询新闻分类失败")
+        return jsonify(errno=RET.DBERR, errmsg="查询新闻分类失败")
 
     # 2.转成字典列表
     category_list = []
@@ -94,7 +94,7 @@ def news_category():
         category_list.append(category.to_dict())
 
     # 3.携带数据,渲染页面
-    return render_template('admin/news_type.html',category_list=category_list)
+    return render_template('admin/news_type.html', category_list=category_list)
 
 
 # 新闻版式编辑,详情
@@ -129,33 +129,32 @@ def news_edit_detail():
         news_id = request.args.get('news_id')
 
         # 3.校验参数
-        if not news_id: return jsonify(errno=RET.PARAMERR,errmsg="参数不全")
+        if not news_id: return jsonify(errno=RET.PARAMERR, errmsg="参数不全")
 
         # 4.查询新闻新闻对象,判断新闻是否存在
         try:
             news = News.query.get(news_id)
         except Exception as e:
             current_app.logger.error(e)
-            return jsonify(errno=RET.DBERR,errmsg="新闻查询失败")
+            return jsonify(errno=RET.DBERR, errmsg="新闻查询失败")
 
-        if not news: return jsonify(errno=RET.NODATA,errmsg="新闻不存在")
+        if not news: return jsonify(errno=RET.NODATA, errmsg="新闻不存在")
 
         # 5.查询所有分类信息,转成字典数据
         try:
             categories = Category.query.all()
-            categories.pop(0)#弹出最新信息
+            categories.pop(0)  # 弹出最新信息
         except Exception as e:
             current_app.logger.error(e)
-            return jsonify(errno=RET.DBERR,errmsg="分类查询失败")
+            return jsonify(errno=RET.DBERR, errmsg="分类查询失败")
 
         category_list = []
         for category in categories:
             category_list.append(category.to_dict())
 
         # 6.携带,新闻数据,分类数据,渲染页面
-        return render_template('admin/news_edit_detail.html',news=news.to_dict(),category_list=category_list)
+        return render_template('admin/news_edit_detail.html', news=news.to_dict(), category_list=category_list)
 
-    
     # 如果第二次提交进来,POST请求
     # 1.获取参数,POST(news_id,title,digest,content,index_image,category_id)
     news_id = request.form.get('news_id')
@@ -164,11 +163,11 @@ def news_edit_detail():
     content = request.form.get('content')
     index_image = request.files.get('index_image')
     category_id = request.form.get('category_id')
-    
+
     # 2.校验参数
-    if not all([news_id,title,digest,content,index_image,category_id]):
-        return jsonify(errno=RET.PARAMERR,errmsg="参数不全")
-    
+    if not all([news_id, title, digest, content, index_image, category_id]):
+        return jsonify(errno=RET.PARAMERR, errmsg="参数不全")
+
     # 3.查询新闻新闻对象,判断新闻是否存在
     try:
         news = News.query.get(news_id)
@@ -177,15 +176,15 @@ def news_edit_detail():
         return jsonify(errno=RET.DBERR, errmsg="新闻查询失败")
 
     if not news: return jsonify(errno=RET.NODATA, errmsg="新闻不存在")
-    
+
     # 4.上传图片
     try:
         image_name = image_storage(index_image.read())
     except Exception as e:
         current_app.logger.error(e)
         return jsonify(errno=RET.THIRDERR, errmsg="七牛云上传异常")
-    
-    #4.1判断图片是否上传成功
+
+    # 4.1判断图片是否上传成功
     if not image_name: return jsonify(errno=RET.NODATA, errmsg="上传图片失败")
 
     # 5.重写设置属性到新闻对象
@@ -196,8 +195,7 @@ def news_edit_detail():
     news.category_id = category_id
 
     # 6.返回响应
-    return jsonify(errno=RET.OK,errmsg="编辑成功")
-    
+    return jsonify(errno=RET.OK, errmsg="编辑成功")
 
 
 # 新闻版式编辑列表
@@ -218,7 +216,7 @@ def news_edit():
     :return:
     """
     # 1.获取参数
-    page = request.args.get('p',1)
+    page = request.args.get('p', 1)
     keyword = request.args.get("keyword")
 
     # 2.参数类型转换
@@ -231,18 +229,18 @@ def news_edit():
     # 3.分页查询
     try:
 
-        #判断是否有搜索关键字
+        # 判断是否有搜索关键字
         filters = []
         if keyword:
             filters.append(News.title.contains(keyword))
 
-        paginate = News.query.filter(*filters).order_by(News.create_time.desc()).paginate(page,10,False)
+        paginate = News.query.filter(*filters).order_by(News.create_time.desc()).paginate(page, 10, False)
     except Exception as e:
         current_app.logger.error(e)
-        return jsonify(errno=RET.DBERR,errmsg="查询新闻失败")
+        return jsonify(errno=RET.DBERR, errmsg="查询新闻失败")
 
     # 4.获取分页对象属性,总页数,当前页,当前页对象
-    totalPage= paginate.pages
+    totalPage = paginate.pages
     currentPage = paginate.page
     items = paginate.items
 
@@ -253,11 +251,11 @@ def news_edit():
 
     # 6.拼接数据,渲染页面
     data = {
-        "totalPage":totalPage,
-        "currentPage":currentPage,
-        "news_list":news_list
+        "totalPage": totalPage,
+        "currentPage": currentPage,
+        "news_list": news_list
     }
-    return render_template('admin/news_edit.html',data=data)
+    return render_template('admin/news_edit.html', data=data)
 
 
 # 新闻审核,详情
@@ -288,21 +286,21 @@ def news_review_detail():
         # 2.获取到新闻编号查询新闻对象
         news_id = request.args.get("news_id")
 
-        #2.1判断编号是否存在
+        # 2.1判断编号是否存在
         if not news_id:
-            return jsonify(errno=RET.PARAMERR,errmsg="新闻编号为空")
+            return jsonify(errno=RET.PARAMERR, errmsg="新闻编号为空")
 
         try:
             news = News.query.get(news_id)
         except Exception as e:
             current_app.logger.error(e)
-            return jsonify(errno=RET.DBERR,errmsg="获取新闻失败")
+            return jsonify(errno=RET.DBERR, errmsg="获取新闻失败")
 
         if not news:
-            return jsonify(errno=RET.NODATA,errmsg="新闻不存在")
+            return jsonify(errno=RET.NODATA, errmsg="新闻不存在")
 
         # 3.渲染到页面展示,携带新闻数据
-        return render_template('admin/news_review_detail.html',news=news.to_dict())
+        return render_template('admin/news_review_detail.html', news=news.to_dict())
 
     # 如果是第二次,证明是修改新闻状态
     # 1.获取参数
@@ -310,11 +308,11 @@ def news_review_detail():
     action = request.json.get("action")
 
     # 2.校验参数,为空校验,操作类型校验
-    if not all([news_id,action]):
-        return jsonify(errno=RET.PARAMERR,errmsg="参数不全")
+    if not all([news_id, action]):
+        return jsonify(errno=RET.PARAMERR, errmsg="参数不全")
 
-    if not action in ["accept",'reject']:
-        return jsonify(errno=RET.DATAERR,errmsg="操作类型有误")
+    if not action in ["accept", 'reject']:
+        return jsonify(errno=RET.DATAERR, errmsg="操作类型有误")
 
     # 3.根据新闻编号获取新闻对象
     try:
@@ -332,12 +330,13 @@ def news_review_detail():
         news.status = 0
     else:
         reason = request.json.get('reason')
-        if not reason: return jsonify(errno=RET.DATAERR,errmsg="没有拒绝原因")
+        if not reason: return jsonify(errno=RET.DATAERR, errmsg="没有拒绝原因")
         news.status = -1
         news.reason = reason
 
     # 6.返回响应
-    return jsonify(errno=RET.OK,errmsg="操作成功")
+    return jsonify(errno=RET.OK, errmsg="操作成功")
+
 
 # 新闻审核列表
 # 请求路径: /admin/news_review
@@ -357,7 +356,7 @@ def news_review():
     :return:
     """
     # 1.获取参数
-    page = request.args.get('p',1)
+    page = request.args.get('p', 1)
     keyword = request.args.get("keyword")
 
     # 2.参数类型转换
@@ -370,18 +369,18 @@ def news_review():
     # 3.分页查询
     try:
 
-        #判断是否有搜索关键字
+        # 判断是否有搜索关键字
         filters = [News.status != 0]
         if keyword:
             filters.append(News.title.contains(keyword))
 
-        paginate = News.query.filter(*filters).order_by(News.create_time.desc()).paginate(page,10,False)
+        paginate = News.query.filter(*filters).order_by(News.create_time.desc()).paginate(page, 10, False)
     except Exception as e:
         current_app.logger.error(e)
-        return jsonify(errno=RET.DBERR,errmsg="查询新闻失败")
+        return jsonify(errno=RET.DBERR, errmsg="查询新闻失败")
 
     # 4.获取分页对象属性,总页数,当前页,当前页对象
-    totalPage= paginate.pages
+    totalPage = paginate.pages
     currentPage = paginate.page
     items = paginate.items
 
@@ -392,11 +391,11 @@ def news_review():
 
     # 6.拼接数据,渲染页面
     data = {
-        "totalPage":totalPage,
-        "currentPage":currentPage,
-        "news_list":news_list
+        "totalPage": totalPage,
+        "currentPage": currentPage,
+        "news_list": news_list
     }
-    return render_template('admin/news_review.html',data=data)
+    return render_template('admin/news_review.html', data=data)
 
 
 # 用户列表人数统计
@@ -427,7 +426,7 @@ def user_list():
 
     # 3.分页获取作者新闻列表
     try:
-        paginate = User.query.order_by(User.create_time.desc()).paginate(page,10,False)
+        paginate = User.query.order_by(User.create_time.desc()).paginate(page, 10, False)
     except Exception as e:
         current_app.logger.error(e)
         return jsonify(errno=RET.DBERR, errmsg="查询新闻失败")
@@ -447,7 +446,7 @@ def user_list():
         "currentPage": currentPage,
         "user_list": user_list
     }
-    return render_template('admin/user_list.html',data=data)
+    return render_template('admin/user_list.html', data=data)
 
 
 # 用户统计
@@ -472,46 +471,46 @@ def user_count():
         total_count = User.query.filter(User.is_admin == False).count()
     except Exception as e:
         current_app.logger.error(e)
-        return jsonify(errno=RET.DBERR,errmsg="获取总人数异常")
-    
+        return jsonify(errno=RET.DBERR, errmsg="获取总人数异常")
+
     # 2.查询月活人数
     # 获取日历对象
     cal = time.localtime()
     try:
 
-        #创建本月1号的,时间字符串
-        month_start_str = "%d-%d-01"%(cal.tm_year,cal.tm_mon)
+        # 创建本月1号的,时间字符串
+        month_start_str = "%d-%d-01" % (cal.tm_year, cal.tm_mon)
 
-        #创建本月1号的,时间对象
-        month_start_date = datetime.datetime.strptime(month_start_str,"%Y-%m-%d")
+        # 创建本月1号的,时间对象
+        month_start_date = datetime.datetime.strptime(month_start_str, "%Y-%m-%d")
 
         # 查询数据库
         month_count = User.query.filter(User.last_login >= month_start_date, User.is_admin == False).count()
 
     except Exception as e:
         current_app.logger.error(e)
-        return jsonify(errno=RET.DBERR,errmsg="获取月活人数异常")
-    
+        return jsonify(errno=RET.DBERR, errmsg="获取月活人数异常")
+
     # 3.查询日活人数
     try:
 
-        #创建本日,0点,时间字符串
-        day_start_str = "%d-%d-%d"%(cal.tm_year,cal.tm_mon,cal.tm_mday)
+        # 创建本日,0点,时间字符串
+        day_start_str = "%d-%d-%d" % (cal.tm_year, cal.tm_mon, cal.tm_mday)
 
-        #创建本日,0点,时间对象
-        day_start_date = datetime.datetime.strptime(day_start_str,"%Y-%m-%d")
+        # 创建本日,0点,时间对象
+        day_start_date = datetime.datetime.strptime(day_start_str, "%Y-%m-%d")
 
         # 查询数据库
         day_count = User.query.filter(User.last_login >= day_start_date, User.is_admin == False).count()
 
     except Exception as e:
         current_app.logger.error(e)
-        return jsonify(errno=RET.DBERR,errmsg="获取月活人数异常")
+        return jsonify(errno=RET.DBERR, errmsg="获取月活人数异常")
 
     # 4.查询获取日期段
     # 5.查询获取日期段,所对应的活跃人数
-    active_date = [] #活跃日期
-    active_count = [] #活跃人数
+    active_date = []  # 活跃日期
+    active_count = []  # 活跃人数
     for i in range(0, 31):
         # 当天开始时间A
         begin_date = day_start_date - datetime.timedelta(days=i)
@@ -528,19 +527,19 @@ def user_count():
         # 添加当天注册人数到,获取数量中
         active_count.append(everyday_active_count)
 
-    #为了方便查看图表,反转容器
+    # 为了方便查看图表,反转容器
     active_count.reverse()
     active_date.reverse()
 
     # 6.拼接数据渲染页面
     data = {
-        "total_count":total_count,
-        "month_count":month_count,
-        "day_count":day_count,
-        "active_date":active_date,
-        "active_count":active_count
+        "total_count": total_count,
+        "month_count": month_count,
+        "day_count": day_count,
+        "active_date": active_date,
+        "active_count": active_count
     }
-    return render_template('admin/user_count.html',data=data)
+    return render_template('admin/user_count.html', data=data)
 
 
 # 管理员首页
@@ -551,11 +550,11 @@ def user_count():
 @admin_blu.route('/index')
 @user_login_data
 def admin_index():
-
     data = {
-        "user_info":g.user.to_dict() if g.user else ""
+        "user_info": g.user.to_dict() if g.user else ""
     }
-    return render_template('admin/index.html',data=data)
+    return render_template('admin/index.html', data=data)
+
 
 # 管理员登陆页面
 # 请求路径: /admin/login
@@ -578,7 +577,7 @@ def admin_login():
     # 1.如果是第一次进来,渲染页面
     if request.method == 'GET':
 
-        #判断是否已经登陆
+        # 判断是否已经登陆
         if session.get('is_admin'):
             return redirect(url_for('admin.admin_index'))
 
@@ -589,22 +588,22 @@ def admin_login():
     password = request.form.get('password')
 
     # 3.校验参数
-    if not all([username,password]):
-        return render_template('admin/login.html',errmsg='参数不全')
+    if not all([username, password]):
+        return render_template('admin/login.html', errmsg='参数不全')
 
     # 4.获取管理员用户对象
     try:
-        user = User.query.filter(User.mobile == username,User.is_admin == True).first()
+        user = User.query.filter(User.mobile == username, User.is_admin == True).first()
     except Exception as e:
         current_app.logger.error(e)
-        return render_template('admin/login.html',errmsg="查询用户异常")
+        return render_template('admin/login.html', errmsg="查询用户异常")
 
     if not user:
-        return render_template('admin/login.html',errmsg="管理员不存在")
+        return render_template('admin/login.html', errmsg="管理员不存在")
 
     # 5.判断密码是否正确
     if not user.check_passowrd(password):
-        return render_template('admin/login.html',errmsg="密码不正确")
+        return render_template('admin/login.html', errmsg="密码不正确")
 
     # 6.记录session信息
     session["user_id"] = user.id
